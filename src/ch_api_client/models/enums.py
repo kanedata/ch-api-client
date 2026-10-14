@@ -31,3 +31,19 @@ class Country(StrEnum):
     NOT_SPECIFIED = "Not specified"
     UNITED_KINGDOM = "United Kingdom"
     NORTHERN_IRELAND = "Northern Ireland"
+
+
+class ResponseKind(StrEnum):
+    SEARCH_ALL = "search#all"
+    SEARCH_COMPANIES = "search#companies"
+    SEARCH_PERSONSWITHSIGNIFICANTCONTROL = "search#persons-with-significant-control"
+    SEARCH_OFFICERS = "search#officers"
+    SEARCH_DISQUALIFIEDOFFICER = "search#disqualified-officers"
+    SEARCHRESULTS_COMPANY = "searchresults#company"
+    SEARCHRESULTS_OFFICER = "searchresults#officer"
+    SEARCHRESULTS_PERSONSWITHSIGNIFICANTCONTROL = (
+        "searchresults#persons-with-significant-control"
+    )
+    SEARCHRESULTS_DISQUALIFIEDOFFICER = "searchresults#disqualified-officer"
+    OFFICER_LIST = "officer-list"
+    FILING_HISTORY = "filing-history"

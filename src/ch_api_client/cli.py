@@ -9,6 +9,7 @@ from pydantic import TypeAdapter
 from pydantic.dataclasses import dataclass
 
 from ch_api_client.client import CompaniesHouseAPI
+from ch_api_client.models.document import ContentType
 
 load_dotenv()
 
@@ -16,6 +17,7 @@ load_dotenv()
 @dataclass
 class CliContextObject:
     api_key: InitVar[str]
+    pretty_print: bool = False
     client: CompaniesHouseAPI = field(init=False)
 
     def __post_init__(self, api_key: str):
@@ -23,7 +25,8 @@ class CliContextObject:
 
     def to_json(self, result):
         result_adapter = TypeAdapter(type(result))
-        return result_adapter.dump_json(result)
+        indent = 4 if self.pretty_print else None
+        return result_adapter.dump_json(result, indent=indent)
 
 
 pass_client = click.make_pass_decorator(CliContextObject, ensure=True)
@@ -101,6 +104,34 @@ class ApiGroup(click.Group):
     help="Your Companies House API key.",
     envvar="CH_API_KEY",
 )
+@click.option(
+    "--pretty-print/--no-pretty-print",
+    default=False,
+    help="Enable or disable pretty printing of JSON output.",
+)
 @click.pass_context
-def cli(ctx: click.Context, api_key: str):
-    ctx.obj = CliContextObject(api_key=api_key)
+def cli(ctx: click.Context, api_key: str, pretty_print: bool):
+    ctx.obj = CliContextObject(api_key=api_key, pretty_print=pretty_print)
+
+
+@cli.command("get-filing-history-document")
+@click.argument("company-number")
+@click.argument("transaction-id")
+@click.argument("output-file", type=click.Path(writable=True))
+@click.option(
+    "--content-type",
+    type=ContentType,
+)
+@pass_client
+def get_filing_history_document(
+    obj: CliContextObject,
+    company_number: str,
+    transaction_id: str,
+    output_file: str,
+    content_type: ContentType | None = None,
+):
+    client = obj.client
+    document_metadata = client.get_document_metadata(company_number, transaction_id)
+    result = client.get_document(document_metadata, content_type=content_type)
+    with open(output_file, "wb") as f:
+        f.write(result)

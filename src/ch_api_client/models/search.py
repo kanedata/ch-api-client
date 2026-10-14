@@ -1,6 +1,5 @@
 import dataclasses
 import datetime as dt
-from enum import StrEnum
 from typing import Literal
 
 from pydantic.dataclasses import dataclass
@@ -11,29 +10,13 @@ from ch_api_client.models._base import (
     DateOfBirthBase,
     ParametersBase,
 )
+from ch_api_client.models._shared import OfficerAddress, OfficerDateOfBirth
 from ch_api_client.models.ch_enums import CompanyStatus, CompanyType
-from ch_api_client.models.enums import Country, DescriptionIdentifier
-
-
-class ResponseKind(StrEnum):
-    SEARCH_ALL = "search#all"
-    SEARCH_COMPANIES = "search#companies"
-    SEARCH_PERSONSWITHSIGNIFICANTCONTROL = "search#persons-with-significant-control"
-    SEARCH_OFFICERS = "search#officers"
-    SEARCH_DISQUALIFIEDOFFICER = "search#disqualified-officers"
-    SEARCHRESULTS_COMPANY = "searchresults#company"
-    SEARCHRESULTS_OFFICER = "searchresults#officer"
-    SEARCHRESULTS_PERSONSWITHSIGNIFICANTCONTROL = (
-        "searchresults#persons-with-significant-control"
-    )
-    SEARCHRESULTS_DISQUALIFIEDOFFICER = "searchresults#disqualified-officer"
+from ch_api_client.models.enums import Country, DescriptionIdentifier, ResponseKind
 
 
 @dataclass
 class SearchParameters(ParametersBase):
-    q: str = dataclasses.field(
-        metadata={"description": "The term being searched for."},
-    )
     items_per_page: int | None = dataclasses.field(
         default=None,
         metadata={"description": "The number of search results to return per page."},
@@ -105,18 +88,6 @@ class RegisteredOfficeAddress(AddressBase):
 
 
 @dataclass
-class OfficerAddress(AddressBase):
-    country: str | None = dataclasses.field(
-        default=None,
-        metadata={"description": "The country."},
-    )
-    premises: str | None = dataclasses.field(
-        default=None,
-        metadata={"description": "The property name or number."},
-    )
-
-
-@dataclass
 class PersonsWithSignificantControlAddress(AddressBase):
     country: str | None = dataclasses.field(
         default=None,
@@ -137,16 +108,6 @@ class DisqualifiedOfficerAddress(AddressBase):
     premises: str | None = dataclasses.field(
         default=None,
         metadata={"description": "The property name or number."},
-    )
-
-
-@dataclass
-class OfficerDateOfBirth(DateOfBirthBase):
-    month: int = dataclasses.field(
-        metadata={"description": "The month the officer was born in."},
-    )
-    year: int = dataclasses.field(
-        metadata={"description": "The year the officer was born in."},
     )
 
 
