@@ -1,2 +1,5 @@
+from ch_api_client.cli import cli
+
+
 def main() -> None:
-    print("Hello from ch-api-client!")
+    cli()
