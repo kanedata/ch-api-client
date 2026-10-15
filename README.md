@@ -1,5 +1,7 @@
 # Companies House API Client
 
+![Test status](https://github.com/kanedata/ch-api-client/workflows/tests/badge.svg)
+
 A client for accessing the [Companies House API](https://developer-specs.company-information.service.gov.uk/).
 
 The library contains a Client class which is initialised with your API key. The client object methods return 
