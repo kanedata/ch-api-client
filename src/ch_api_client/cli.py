@@ -117,7 +117,7 @@ def cli(ctx: click.Context, api_key: str, pretty_print: bool):
 @cli.command("get-filing-history-document")
 @click.argument("company-number")
 @click.argument("transaction-id")
-@click.argument("output-file", type=click.Path(writable=True))
+@click.argument("output-file", type=click.File(mode="wb"), default="-")
 @click.option(
     "--content-type",
     type=ContentType,
@@ -127,11 +127,10 @@ def get_filing_history_document(
     obj: CliContextObject,
     company_number: str,
     transaction_id: str,
-    output_file: str,
+    output_file: click.File,
     content_type: ContentType | None = None,
 ):
     client = obj.client
     document_metadata = client.get_document_metadata(company_number, transaction_id)
     result = client.get_document(document_metadata, content_type=content_type)
-    with open(output_file, "wb") as f:
-        f.write(result)
+    output_file.write(result)  # type: ignore

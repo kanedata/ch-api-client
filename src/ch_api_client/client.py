@@ -3,7 +3,7 @@ from functools import wraps
 
 import httpx2
 
-from ch_api_client.models._base import CompanyNumber, ParametersBase
+from ch_api_client.models._base import ParametersBase
 from ch_api_client.models.company_officer_list import (
     CompanyOfficerListParameters,
     OfficerList,
@@ -12,10 +12,7 @@ from ch_api_client.models.company_officer_list import (
     RegisterType,
     RegisterView,
 )
-from ch_api_client.models.company_profile import (
-    CompanyProfile,
-    CompanyProfileParameters,
-)
+from ch_api_client.models.company_profile import CompanyProfile
 from ch_api_client.models.document import ContentType, DocumentMetadata
 from ch_api_client.models.filing_history import (
     FilingHistoryItem,
@@ -33,7 +30,8 @@ from ch_api_client.models.search import (
     SearchParameters,
 )
 
-CH_API_BASE_URL = "https://api.company-information.service.gov.uk"
+COMPANY_API_BASE_URL = "https://api.company-information.service.gov.uk"
+DOCUMENT_API_BASE_URL = "https://document-api.company-information.service.gov.uk"
 
 
 def is_cli_method(func):
@@ -51,7 +49,7 @@ class CompaniesHouseAPI:
         self,
         api_key: str,
         session: httpx2.Client | None = None,
-        base_url: str = CH_API_BASE_URL,
+        base_url: str = COMPANY_API_BASE_URL,
     ):
         self.api_key = api_key
         self.session = session or httpx2.Client()
@@ -84,9 +82,7 @@ class CompaniesHouseAPI:
             CompanyProfile: The company profile information.
         """
         url = f"/company/{company_number}"
-
-        params = CompanyProfileParameters(company_number=CompanyNumber(company_number))
-        return CompanyProfile(**self._fetch_url(url, params=params))
+        return CompanyProfile(**self._fetch_url(url))
 
     def get_company_address(self, *args, **kwargs):
         raise NotImplementedError("Method not implemented")
@@ -151,6 +147,36 @@ class CompaniesHouseAPI:
 
     def get_company_registers(self, *args, **kwargs):
         raise NotImplementedError("Method not implemented")
+
+    @is_cli_method
+    def get_filing_history_list(
+        self,
+        company_number: str,
+        category: str | None = None,
+        items_per_page: int | None = None,
+        start_index: int | None = None,
+    ):
+        """
+        filingHistoryList resource
+
+        Get the filing history list of a company
+
+        Args:
+            company_number (str): The company number that the single filing is required for.
+            category (str): One or more comma-separated categories to filter by (inclusive).
+            items_per_page (int): The number of filing history items to return per page.
+            start_index (int): The index into the entire result set that this result page starts.
+
+        Returns:
+            FilingHistoryList: Filing history items resource returned
+        """
+        url = f"/company/{company_number}/filing-history"
+        params = FilingHistoryListParameters(
+            category=category,
+            items_per_page=items_per_page,
+            start_index=start_index,
+        )
+        return FilingHistoryList(**self._fetch_url(url, params=params))
 
     @is_cli_method
     def get_filing_history(
@@ -240,36 +266,6 @@ class CompaniesHouseAPI:
         response.raise_for_status()
         return response.content
 
-    @is_cli_method
-    def get_filing_history_list(
-        self,
-        company_number: str,
-        category: str | None = None,
-        items_per_page: int | None = None,
-        start_index: int | None = None,
-    ):
-        """
-        filingHistoryList resource
-
-        Get the filing history list of a company
-
-        Args:
-            company_number (str): The company number that the single filing is required for.
-            category (str): One or more comma-separated categories to filter by (inclusive).
-            items_per_page (int): The number of filing history items to return per page.
-            start_index (int): The index into the entire result set that this result page starts.
-
-        Returns:
-            FilingHistoryList: Filing history items resource returned
-        """
-        url = f"/company/{company_number}/filing-history"
-        params = FilingHistoryListParameters(
-            category=category,
-            items_per_page=items_per_page,
-            start_index=start_index,
-        )
-        return FilingHistoryList(**self._fetch_url(url, params=params))
-
     def get_exemptions(self, *args, **kwargs):
         raise NotImplementedError("Method not implemented")
 
@@ -349,6 +345,7 @@ class CompaniesHouseAPI:
         """
         url = "/search"
         params = SearchParameters(
+            q=q,
             items_per_page=items_per_page,
             start_index=start_index,
         )
@@ -378,6 +375,7 @@ class CompaniesHouseAPI:
         """
         url = "/search/companies"
         params = CompanySearchParameters(
+            q=q,
             items_per_page=items_per_page,
             start_index=start_index,
             restrictions=restrictions,
@@ -406,6 +404,7 @@ class CompaniesHouseAPI:
         """
         url = "/search/officers"
         params = OfficerSearchParameters(
+            q=q,
             items_per_page=items_per_page,
             start_index=start_index,
         )
@@ -433,6 +432,7 @@ class CompaniesHouseAPI:
         """
         url = "/search/disqualified-officers"
         params = DisqualifiedOfficerSearchParameters(
+            q=q,
             items_per_page=items_per_page,
             start_index=start_index,
         )

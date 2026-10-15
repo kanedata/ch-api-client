@@ -85,11 +85,13 @@ class ItemLinkTypes:
 
 @dataclass
 class FormerNames:
-    forenames: str = dataclasses.field(
-        metadata={"description": "Former forenames of the officer."}
+    forenames: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "Former forenames of the officer."},
     )
-    surname: str = dataclasses.field(
-        metadata={"description": "Former surnames of the officer."}
+    surname: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "Former surnames of the officer."},
     )
 
 

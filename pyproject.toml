@@ -21,6 +21,10 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "coverage>=7.16.2",
+    "faker>=40.43.0",
+    "httpx2-pytest>=2.0.0",
+    "pytest>=9.1.1",
     "pyyaml>=6.0.3",
     "ruff>=0.17.0",
 ]

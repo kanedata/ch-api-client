@@ -7,7 +7,6 @@ from ch_api_client.models._base import (
     AccountingDateBase,
     AddressBase,
     CompanyNumber,
-    ParametersBase,
     SICCode,
 )
 from ch_api_client.models.ch_enums import (
@@ -23,15 +22,6 @@ from ch_api_client.models.ch_enums import (
     TermsOfAccountPublication,
 )
 from ch_api_client.models.enums import Country
-
-
-@dataclass
-class CompanyProfileParameters(ParametersBase):
-    company_number: CompanyNumber = dataclasses.field(
-        metadata={
-            "description": "The company number of the basic information to return."
-        },
-    )
 
 
 @dataclass

@@ -22,6 +22,11 @@ class FilingHistoryCategory(StrEnum):
     OFFICERS = "officers"
     RESOLUTION = "resolution"
     CONFIRMATION_STATEMENT = "confirmation-statement"
+    GAZETTE = "gazette"
+    CHANGE = "change"
+    DISSOLUTION = "dissolution"
+    TERMINATION = "termination"
+    APPOINTMENTS = "appointments"
 
 
 @dataclass
@@ -178,7 +183,7 @@ class FilingHistoryItem:
         default_factory=list,
         metadata={"description": "Resolutions for the filing"},
     )
-    subcategory: Literal[FilingHistoryCategory.RESOLUTION] | None = dataclasses.field(
+    subcategory: FilingHistoryCategory | None = dataclasses.field(
         default=None,
         metadata={"description": "The sub-category of the document filed."},
     )

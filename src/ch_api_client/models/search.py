@@ -17,6 +17,10 @@ from ch_api_client.models.enums import Country, DescriptionIdentifier, ResponseK
 
 @dataclass
 class SearchParameters(ParametersBase):
+    q: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The search query string."},
+    )
     items_per_page: int | None = dataclasses.field(
         default=None,
         metadata={"description": "The number of search results to return per page."},
