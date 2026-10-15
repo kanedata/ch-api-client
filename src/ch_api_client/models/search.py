@@ -257,9 +257,6 @@ class CompanySearchItems(CommonSearchItems):
     company_status: CompanyStatus = dataclasses.field(
         metadata={"description": "The company status."},
     )
-    address: RegisteredOfficeAddress = dataclasses.field(
-        metadata={"description": "The address of the company's registered office."},
-    )
 
     def __str__(self) -> str:
         return f"{self.kind}: {self.title}"

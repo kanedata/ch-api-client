@@ -41,7 +41,7 @@ def is_cli_method(func):
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
 
-    setattr(wrapper, "_is_cli_method", True)
+    setattr(wrapper, "_is_cli_method", True)  # noqa: B010
 
     return wrapper
 
@@ -223,7 +223,7 @@ class CompaniesHouseAPI:
         headers = {}
         if content_type:
             if document_metadata.resources and (
-                content_type.value not in document_metadata.resources.keys()
+                content_type.value not in document_metadata.resources
             ):
                 raise ValueError(
                     f"Content type {content_type.value} not available in document resources."
@@ -231,7 +231,7 @@ class CompaniesHouseAPI:
             headers["Accept"] = content_type.value
         else:
             if document_metadata.resources and len(document_metadata.resources) == 1:
-                headers["Accept"] = list(document_metadata.resources.keys())[0]
+                headers["Accept"] = next(iter(document_metadata.resources.keys()))
             elif document_metadata.resources and len(document_metadata.resources) > 1:
                 raise ValueError(
                     "Multiple content types available in document resources. Please specify a content type."

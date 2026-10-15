@@ -47,8 +47,10 @@ def update_ch_enums(constants_url, output_path):
             print(values)
             f.write("\n\n")
             f.write(f"class {snake_to_camel(key)}(StrEnum):\n")
-            for value, description in values.items():
-                f.write(f"    {get_value_key(value)} = '{value}'  # {description}\n")
+            f.writelines(
+                f"    {get_value_key(value)} = '{value}'  # {description}\n"
+                for value, description in values.items()
+            )
         f.write("\n")
 
 
