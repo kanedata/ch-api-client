@@ -33,7 +33,12 @@ pass_client = click.make_pass_decorator(CliContextObject, ensure=True)
 
 
 class ApiGroup(click.Group):
-    def __init__(self, name=None, client=None, **kwargs):
+    def __init__(
+        self,
+        name: str | None = None,
+        client: type[CompaniesHouseAPI] | None = None,
+        **kwargs,
+    ):
         super().__init__(name=name, **kwargs)
         self._client = client
         self._register: dict[str, str] = {}
@@ -46,9 +51,9 @@ class ApiGroup(click.Group):
     def _get_base_type(self, annotation: typing.Any) -> typing.Any:
         if typing.get_origin(annotation) == UnionType:
             args = typing.get_args(annotation)
-            args = [arg for arg in args if arg is not type(None)]
-            if len(args) == 1:
-                return args[0]
+            not_none_args = [arg for arg in args if arg is not type(None)]
+            if len(not_none_args) == 1:
+                return not_none_args[0]
             raise ValueError(f"Cannot determine base type for annotation: {annotation}")
         return annotation
 
