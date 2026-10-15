@@ -1,7 +1,7 @@
 [project]
 name = "ch-api-client"
 version = "0.1.0"
-description = "Add your description here"
+description = "A client for accessing the Companies House API"
 readme = "README.md"
 authors = [{ name = "David Kane", email = "david@dkane.net" }]
 requires-python = ">=3.11"
