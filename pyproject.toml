@@ -21,6 +21,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "chardet>=7.6.0",
     "coverage>=7.16.2",
     "faker>=40.43.0",
     "httpx2-pytest>=2.0.0",

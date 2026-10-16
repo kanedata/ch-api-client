@@ -1,6 +1,7 @@
 from pathlib import Path
 from textwrap import dedent
 
+import chardet
 import click
 import httpx2
 import yaml
@@ -46,19 +47,22 @@ def update_ch_enums(constants_url, output_path):
     constants = {}
     for url in constants_url:
         response = httpx2.get(url)
-        constants.update(yaml.safe_load(response.text))
+        response_encoding = chardet.detect(response.content, max_bytes=10000)[
+            "encoding"
+        ]
+        constants.update(yaml.safe_load(response.content.decode(response_encoding)))
     with open(output_path, "w") as f:
         f.write(dedent(FILE_TEMPLATE).strip())
         for key, values in constants.items():
             print(key)
-            print(values)
+            values = {str(k): str(v) for k, v in values.items()}
             f.write("\n\n")
             f.write(f"class {snake_to_camel(key)}(StrEnum):\n")
             f.writelines(
                 f"    {get_value_key(value)} = '{value}'  # {description}\n"
                 for value, description in values.items()
             )
-        f.write("\n")
+        f.write("\n\n")
 
 
 if __name__ == "__main__":
