@@ -21,8 +21,11 @@ from ch_api_client.models.filing_history import (
 )
 from ch_api_client.models.registered_office_address import RegisteredOfficeAddress
 from ch_api_client.models.search import (
+    AdvancedCompanySearch,
+    AlphabeticalCompanySearch,
     CompanySearch,
     DisqualifiedOfficerSearch,
+    DissolvedCompanySearch,
     OfficerSearch,
     Search,
 )
@@ -87,8 +90,13 @@ class MethodToTest:
         args = ["--api-key", DUMMY_API_KEY, self.cli_command, *map(str, self.args)]
         if self.kwargs:
             for key, value in self.kwargs.items():
-                args.append(f"--{key.replace('_', '-')}")
-                args.append(str(value))
+                if isinstance(value, list):
+                    for item in value:
+                        args.append(f"--{key.replace('_', '-')}")
+                        args.append(str(item))
+                else:
+                    args.append(f"--{key.replace('_', '-')}")
+                    args.append(str(value))
         return args
 
     def invoke_command(self, runner: CliRunner):
@@ -279,6 +287,50 @@ METHODS: list[MethodToTest] = [
             ),
         ],
         return_type=DisqualifiedOfficerSearch,
+    ),
+    MethodToTest(
+        method_name="get_search_dissolved",
+        args=["test", "best-match"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/dissolved-search/companies(\?.*)?",
+                file="dissolved-search_companies.json",
+            ),
+        ],
+        return_type=DissolvedCompanySearch,
+    ),
+    MethodToTest(
+        method_name="get_search_alphabetical",
+        args=["test"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/alphabetical-search/companies(\?.*)?",
+                file="alphabetical-search_companies.json",
+            ),
+        ],
+        return_type=AlphabeticalCompanySearch,
+    ),
+    MethodToTest(
+        method_name="get_search_advanced",
+        kwargs={"company_name_includes": "test"},
+        url_mocks=[
+            UrlMock(
+                regex=r"/advanced-search/companies(\?.*)?",
+                file="advanced-search_companies.json",
+            ),
+        ],
+        return_type=AdvancedCompanySearch,
+    ),
+    MethodToTest(
+        method_name="get_search_advanced",
+        kwargs={"company_name_includes": "test", "company_type": ["ltd", "plc"]},
+        url_mocks=[
+            UrlMock(
+                regex=r"/advanced-search/companies(\?.*)?",
+                file="advanced-search_companies.json",
+            ),
+        ],
+        return_type=AdvancedCompanySearch,
     ),
 ]
 

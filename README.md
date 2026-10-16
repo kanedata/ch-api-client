@@ -51,7 +51,7 @@ From the [Companies House Public Data API](https://developer-specs.company-infor
 | `get_registered_office_address`                 | `/company/{company_number}/registered-office-address`                                                            |     `RegisteredOfficeAddress`                        | Y             |
 | `get_company_officers`                | `/company/{company_number}/officers`                                                                             | `OfficerList`               | Y           |
 | `get_company_officer_appointment`     | `/company/{company_number}/appointments/{appointment_id}`                                                        | `OfficerSummary`            | Y           |
-| `get_company_registers`               | `/company/{company_number}/registers`                                                                            |                             |             |
+| `get_company_registers`             | `/company/{company_number}/registers`                                                                            | `CompanyRegister`                          | Y<sup>[1](#fn1)</sup>             |
 | `get_filing_history`                  | `/company/{company_number}/filing-history/{transaction_id}`                                                      | `FilingHistoryItem`         | Y           |
 | `get_filing_history_list`             | `/company/{company_number}/filing-history`                                                                       | `FilingHistoryList`         | Y           |
 | `get_exemptions`                      | `/company/{company_number}/exemptions`                                                                           |                             |             |
@@ -78,10 +78,11 @@ From the [Companies House Public Data API](https://developer-specs.company-infor
 | `get_search_companies`                | `/search/companies`                                                                                              | `CompanySearch`             | Y           |
 | `get_search_officers`                 | `/search/officers`                                                                                               | `OfficerSearch`             | Y           |
 | `get_search_disqualified_officers`    | `/search/disqualified-officers`                                                                                  | `DisqualifiedOfficerSearch` | Y           |
-| `get_search_dissolved`                | `/dissolved-search/companies`                                                                                    |                             |             |
-| `get_search_alphabetical`             | `/alphabetical-search/companies`                                                                                 |                             |             |
-| `get_search_advanced`                 | `/advanced-search/companies`                                                                                     |                             |             |
+| `get_search_dissolved`                | `/dissolved-search/companies`                                                                                    | `DissolvedCompanySearch`                             |             Y|
+| `get_search_alphabetical`             | `/alphabetical-search/companies`                                                                                 | `AlphabeticalCompanySearch`                             |Y             |
+| `get_search_advanced`                 | `/advanced-search/companies`                                                                                     | `AdvancedCompanySearch`                             |Y             |
 
+<a name="fn1">1</a>: _The Registers endpoint only seems to return 404 responses_
 
 From the [Document API](https://developer-specs.company-information.service.gov.uk/document-api/reference):
 

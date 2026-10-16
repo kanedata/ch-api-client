@@ -14,6 +14,7 @@ from ch_api_client.models.company_officer_list import (
     RegisterView,
 )
 from ch_api_client.models.company_profile import CompanyProfile
+from ch_api_client.models.company_register import CompanyRegister
 from ch_api_client.models.document import ContentType, DocumentMetadata
 from ch_api_client.models.filing_history import (
     AnnualAccount,
@@ -24,10 +25,17 @@ from ch_api_client.models.filing_history import (
 )
 from ch_api_client.models.registered_office_address import RegisteredOfficeAddress
 from ch_api_client.models.search import (
+    AdvancedCompanySearch,
+    AdvancedSearchParameters,
+    AlphabeticalCompanySearch,
+    AlphabeticalSearchParameters,
     CompanySearch,
     CompanySearchParameters,
     DisqualifiedOfficerSearch,
     DisqualifiedOfficerSearchParameters,
+    DissolvedCompanySearch,
+    DissolvedSearchParameters,
+    DissolvedSearchType,
     OfficerSearch,
     OfficerSearchParameters,
     Search,
@@ -171,22 +179,22 @@ class CompaniesHouseAPI:
         url = f"/company/{company_number}/appointments/{appointment_id}"
         return OfficerSummary(**self._fetch_url(url))
 
-    # # Company Registers method seems to always return a 404
+    # Company Registers method seems to always return a 404 - this method is not tested
     # @is_cli_method
-    # def get_company_registers(self, company_number: str) -> CompanyRegister:
-    #     """
-    #     Company registers
+    def get_company_registers(self, company_number: str) -> CompanyRegister:
+        """
+        Company registers
 
-    #     Get the company registers information.
+        Get the company registers information.
 
-    #     Args:
-    #         company_number (str): The company number of the register information to return.
+        Args:
+            company_number (str): The company number of the register information to return.
 
-    #     Returns:
-    #         CompanyRegister: The company register information.
-    #     """
-    #     url = f"/company/{company_number}/registers"
-    #     return CompanyRegister(**self._fetch_url(url))
+        Returns:
+            CompanyRegister: The company register information.
+        """
+        url = f"/company/{company_number}/registers"
+        return CompanyRegister(**self._fetch_url(url))
 
     @is_cli_method
     def get_filing_history_list(
@@ -576,11 +584,122 @@ class CompaniesHouseAPI:
         )
         return DisqualifiedOfficerSearch(**self._fetch_url(url, params=params))
 
-    def get_search_dissolved(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+    @is_cli_method
+    def get_search_dissolved(
+        self,
+        q: str,
+        search_type: DissolvedSearchType,
+        search_above: str | None = None,
+        search_below: str | None = None,
+        size: int | None = None,
+        start_index: int | None = None,
+    ) -> DissolvedCompanySearch:
+        """
+        Search for a dissolved company
 
-    def get_search_alphabetical(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+        Args:
+            q (str): The company name being searched for
+            search_type (DissolvedSearchType): Determines type of search. Options are alphabetical, best-match, previous-name-dissolved
+            search_above (str | None): The ordered_alpha_key_with_id used for alphabetical paging above.
+            search_below (str | None): The ordered_alpha_key_with_id used for alphabetical paging below.
+            size (int | None): The maximum number of results matching the search term(s) to return with a range of 1 to 100
+            start_index (int | None): Used in best-match and previous-name-dissolved search-type
 
-    def get_search_advanced(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+        Returns:
+            DissolvedCompanySearch: The search results.
+        """
+        url = "/dissolved-search/companies"
+        params = DissolvedSearchParameters(
+            q=q,
+            search_type=search_type,
+            search_above=search_above,
+            search_below=search_below,
+            size=size,
+            start_index=start_index,
+        )
+        return DissolvedCompanySearch(**self._fetch_url(url, params=params))
+
+    @is_cli_method
+    def get_search_alphabetical(
+        self,
+        q: str,
+        search_above: str | None = None,
+        search_below: str | None = None,
+        size: int | None = None,
+    ) -> AlphabeticalCompanySearch:
+        """
+        Search for a company
+
+        Args:
+            q (str): The company name being searched for
+            search_above (str | None): The ordered_alpha_key_with_id used for alphabetical paging above.
+            search_below (str | None): The ordered_alpha_key_with_id used for alphabetical paging below.
+            size (int | None): The maximum number of results matching the search term(s) to return with a range of 1 to 100
+
+        Returns:
+            AlphabeticalCompanySearch: The search results.
+        """
+        url = "/alphabetical-search/companies"
+        params = AlphabeticalSearchParameters(
+            q=q,
+            search_above=search_above,
+            search_below=search_below,
+            size=size,
+        )
+        return AlphabeticalCompanySearch(**self._fetch_url(url, params=params))
+
+    @is_cli_method
+    def get_search_advanced(
+        self,
+        company_name_includes: str | None = None,
+        company_name_excludes: str | None = None,
+        company_status: list[str] | None = None,
+        company_subtype: str | None = None,
+        company_type: list[str] | None = None,
+        dissolved_from: dt.date | None = None,
+        dissolved_to: dt.date | None = None,
+        incorporated_from: dt.date | None = None,
+        incorporated_to: dt.date | None = None,
+        location: str | None = None,
+        sic_codes: list[str] | None = None,
+        size: int | None = None,
+        start_index: int | None = None,
+    ) -> AdvancedCompanySearch:
+        """
+        Search for a company
+
+        Args:
+            company_name_includes (str | None): The company name includes filter.
+            company_name_excludes (str | None): The company name excludes filter.
+            company_status (list[str] | None): The company status filter.
+            company_subtype (str | None): The company subtype filter.
+            company_type (list[str] | None): The company type filter.
+            dissolved_from (dt.date | None): The dissolved from date filter.
+            dissolved_to (dt.date | None): The dissolved to date filter.
+            incorporated_from (dt.date | None): The incorporated from date filter.
+            incorporated_to (dt.date | None): The incorporated to date filter.
+            location (str | None): The location advanced search filter.
+            sic_codes (list[str] | None): The SIC codes advanced search filter.
+            size (int | None): The maximum number of results to return.
+            start_index (int | None): The point at which results will start from (used for paging).
+
+        Returns:
+            AdvancedCompanySearch: The search results.
+        """
+        url = "/advanced-search/companies"
+        params = AdvancedSearchParameters(
+            company_name_includes=company_name_includes,
+            company_name_excludes=company_name_excludes,
+            company_status=company_status,
+            company_subtype=company_subtype,
+            company_type=company_type,
+            dissolved_from=dissolved_from,
+            dissolved_to=dissolved_to,
+            incorporated_from=incorporated_from,
+            incorporated_to=incorporated_to,
+            location=location,
+            sic_codes=sic_codes,
+            size=size,
+            start_index=start_index,
+        )
+        return AdvancedCompanySearch(**self._fetch_url(url, params=params))

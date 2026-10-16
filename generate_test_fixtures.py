@@ -11,6 +11,7 @@ from faker.providers import BaseProvider
 
 import ch_api_client.tests.fixtures
 from ch_api_client import CompaniesHouseAPI
+from ch_api_client.models.search import DissolvedSearchType
 
 load_dotenv()
 
@@ -76,6 +77,10 @@ NON_PERSONAL_INFO_KEYS = (
     "resources",
     "application/pdf",
     "content_length",
+    "company_profile",
+    "top_hit",
+    "hits",
+    "previous_company_names",
 )
 
 DATE_KEYS = (
@@ -94,6 +99,8 @@ DATE_KEYS = (
     "change_date",
     "made_up_date",
     "significant_date",
+    "effective_from",
+    "ceased_on",
 )
 
 URL_RE_MATCH = re.compile(r"^/[A-Za-z0-9_\-\/]+$")
@@ -231,6 +238,8 @@ def recursive_replace_personal_info(
                 new_data[k] = faker.current_country()
             elif k == "premises":
                 new_data[k] = faker.building_number()
+            elif k == "ordered_alpha_key_with_id":
+                new_data[k] = faker.bothify(text="?????????:###########")
             elif k == "person_number":
                 new_data[k] = faker.numerify(text="############")
             elif k in DATE_KEYS and v:
@@ -344,6 +353,11 @@ def main(api_key: str, test_company_number: str, test_search_query: str):
     api_client.get_search_companies(test_search_query)
     api_client.get_search_officers(test_search_query)
     api_client.get_search_disqualified_officers(test_search_query)
+    api_client.get_search_dissolved(
+        test_search_query, search_type=DissolvedSearchType.BEST_MATCH
+    )
+    api_client.get_search_alphabetical(test_search_query)
+    api_client.get_search_advanced(test_search_query, company_type=["ltd", "plc"])
 
 
 if __name__ == "__main__":

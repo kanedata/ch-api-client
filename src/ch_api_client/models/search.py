@@ -1,5 +1,6 @@
 import dataclasses
 import datetime as dt
+from enum import StrEnum
 from typing import Literal
 
 from pydantic.dataclasses import dataclass
@@ -9,10 +10,11 @@ from ch_api_client.models._base import (
     CompanyNumber,
     DateOfBirthBase,
     ItemLinkBase,
+    LinkBase,
     ParametersBase,
 )
 from ch_api_client.models._shared import OfficerAddress, OfficerDateOfBirth
-from ch_api_client.models.ch_enums import CompanyStatus, CompanyType
+from ch_api_client.models.ch_enums import CompanyStatus, CompanySubtype, CompanyType
 from ch_api_client.models.enums import Country, DescriptionIdentifier, ResponseKind
 
 
@@ -50,6 +52,118 @@ class OfficerSearchParameters(SearchParameters):
 @dataclass
 class DisqualifiedOfficerSearchParameters(SearchParameters):
     pass
+
+
+@dataclass
+class AlphabeticalSearchParameters(SearchParameters):
+    search_above: str | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The ordered_alpha_key_with_id used for alphabetical paging above."
+        },
+    )
+    search_below: str | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The ordered_alpha_key_with_id used for alphabetical paging below."
+        },
+    )
+    size: int | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The maximum number of results matching the search term(s) to return with a range of 1 to 100"
+        },
+    )
+
+
+class DissolvedSearchType(StrEnum):
+    ALPHABETICAL = "alphabetical"
+    BEST_MATCH = "best-match"
+    PREVIOUS_NAME_DISSOLVED = "previous-name-dissolved"
+
+
+@dataclass
+class DissolvedSearchParameters(AlphabeticalSearchParameters):
+    search_type: DissolvedSearchType = dataclasses.field(
+        default=DissolvedSearchType.ALPHABETICAL,
+        metadata={
+            "description": "Determines type of search. Options are alphabetical, best-match, previous-name-dissolved"
+        },
+    )
+    start_index: int | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "Used in best-match and previous-name-dissolved search-type"
+        },
+    )
+
+
+@dataclass
+class AdvancedSearchParameters(ParametersBase):
+    company_name_includes: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The company name includes advanced search filter"},
+    )
+    company_name_excludes: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The company name excludes advanced search filter."},
+    )
+    company_status: list[str] | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The company status advanced search filter. To search using multiple values, use a comma delimited list or multiple of the same key i.e. company_status=xxx&company_status=yyy"
+        },
+    )
+    company_subtype: str | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The company subtype advanced search filter. To search using multiple values, use a comma delimited list or multiple of the same key i.e. company_subtype=xxx&company_subtype=yyy",
+        },
+    )
+    company_type: list[str] | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The company type advanced search filter. To search using multiple values, use a comma delimited list or multiple of the same key i.e. company_type=xxx&company_type=yyy",
+        },
+    )
+    dissolved_from: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The dissolved from date advanced search filter"},
+    )
+    dissolved_to: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The dissolved to date advanced search filter"},
+    )
+    incorporated_from: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The incorporated from date advanced search filter"},
+    )
+    incorporated_to: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The incorporated to date advanced search filter"},
+    )
+    location: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The location advanced search filter"},
+    )
+    sic_codes: list[str] | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The SIC codes advanced search filter. To search using multiple values, use a comma delimited list or multiple of the same key i.e. sic_codes=xxx&sic_codes=yyy",
+        },
+    )
+    size: int | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The maximum number of results matching the search term(s) to return with a range of 1 to 5000"
+        },
+    )
+    start_index: int | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The point at which results will start from i.e show search results from result 20 (used for paging)"
+        },
+    )
 
 
 @dataclass
@@ -433,4 +547,253 @@ class DisqualifiedOfficerSearch(CommonSearch):
     items: list[DisqualifiedOfficerSearchItems] = dataclasses.field(
         default_factory=list,
         metadata={"description": "The results of the completed search."},
+    )
+
+
+@dataclass
+class DissolvedRegisteredOfficeAddress(AddressBase):
+    pass
+
+
+@dataclass
+class PreviousCompanyName:
+    company_number: str = dataclasses.field(
+        metadata={"description": "The company number of the dissolved company."}
+    )
+    name: str = dataclasses.field(
+        metadata={"description": "The previous name of the company."}
+    )
+    ceased_on: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The date that the company ceased being known under the company name."
+        },
+    )
+    effective_from: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The date that the company started being known under the company name."
+        },
+    )
+
+
+@dataclass
+class DissolvedCompany:
+    company_name: str = dataclasses.field(
+        metadata={
+            "description": "The company name associated with the dissolved company."
+        }
+    )
+    company_number: str = dataclasses.field(
+        metadata={"description": "The company number of the dissolved company."}
+    )
+    company_status: str = dataclasses.field(
+        metadata={"description": "The status of the company."}
+    )
+    ordered_alpha_key_with_id: str = dataclasses.field(
+        metadata={
+            "description": "The alphakey with it's id associated with the dissolved company."
+        }
+    )
+    kind: Literal[ResponseKind.SEARCHRESULTS_DISSOLVEDCOMPANY] = dataclasses.field(
+        default=ResponseKind.SEARCHRESULTS_DISSOLVEDCOMPANY,
+        metadata={"description": "The type of search result."},
+    )
+    date_of_cessation: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The date that the company was dissolved."},
+    )
+    date_of_creation: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The date that the company was incorporated."},
+    )
+    registered_office_address: DissolvedRegisteredOfficeAddress | None = (
+        dataclasses.field(default=None)
+    )
+    previous_company_names: list[PreviousCompanyName] | None = dataclasses.field(
+        default=None
+    )
+    matched_previous_company_name: PreviousCompanyName | None = dataclasses.field(
+        default=None
+    )
+
+
+@dataclass
+class DissolvedTopHit(DissolvedCompany):
+    pass
+
+
+@dataclass
+class DissolvedCompanySearch:
+    etag: str | None = dataclasses.field(default=None)
+    hits: int | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The number of hits returned on a best-match or previous-company-names search"
+        },
+    )
+    kind: Literal[
+        ResponseKind.SEARCH_DISSOLVED,
+        ResponseKind.SEARCH_ALPHABETICALDISSOLVED,
+        ResponseKind.SEARCH_PREVIOUSNAMEDISSOLVED,
+    ] = dataclasses.field(
+        default=ResponseKind.SEARCH_DISSOLVED,
+        metadata={"description": "The type of search response returned."},
+    )
+    items: list[DissolvedCompany] = dataclasses.field(
+        default_factory=list,
+        metadata={"description": "The results of the completed search."},
+    )
+    top_hit: DissolvedTopHit | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The top hit of the search results."},
+    )
+
+
+@dataclass
+class AlphabeticalCompanyLinks(LinkBase):
+    company_profile: str = dataclasses.field(
+        metadata={"description": "The link to the alphabetical company."}
+    )
+
+
+@dataclass
+class AlphabeticalCompany:
+    company_name: str = dataclasses.field(
+        metadata={
+            "description": "The company name associated with the dissolved company."
+        }
+    )
+    company_number: str = dataclasses.field(
+        metadata={"description": "The company number of the dissolved company."}
+    )
+    company_status: str = dataclasses.field(
+        metadata={"description": "The status of the company."}
+    )
+    company_type: str = dataclasses.field(
+        metadata={"description": "The type of company associated with the company"}
+    )
+    ordered_alpha_key_with_id: str = dataclasses.field(
+        metadata={
+            "description": "The alphakey with it's id associated with the dissolved company."
+        }
+    )
+    kind: Literal[ResponseKind.SEARCHRESULTS_ALPHABETICALSEARCH] = dataclasses.field(
+        default=ResponseKind.SEARCHRESULTS_ALPHABETICALSEARCH,
+        metadata={"description": "The type of search result."},
+    )
+    links: AlphabeticalCompanyLinks | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The links associated with the alphabetical company."},
+    )
+
+
+@dataclass
+class AlphabeticalTopHit(AlphabeticalCompany):
+    pass
+
+
+@dataclass
+class AlphabeticalCompanySearch:
+    kind: Literal[
+        ResponseKind.SEARCH_ALPHABETICALSEARCH,
+        ResponseKind.SEARCH_ENHANCEDSEARCH,
+    ] = dataclasses.field(
+        default=ResponseKind.SEARCH_ALPHABETICALSEARCH,
+        metadata={"description": "The type of search response returned."},
+    )
+    items: list[AlphabeticalCompany] = dataclasses.field(
+        default_factory=list,
+        metadata={"description": "The results of the completed search."},
+    )
+    top_hit: AlphabeticalTopHit | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The top hit of the search results."},
+    )
+
+
+@dataclass
+class AdvancedCompanyLinks(AlphabeticalCompanyLinks):
+    pass
+
+
+@dataclass
+class AdvancedRegisteredOfficeAddress(AddressBase):
+    pass
+
+
+@dataclass
+class AdvancedCompany:
+    company_name: str = dataclasses.field(
+        metadata={
+            "description": "The company name associated with the dissolved company."
+        }
+    )
+    company_number: CompanyNumber = dataclasses.field(
+        metadata={"description": "The company number of the dissolved company."}
+    )
+    company_status: CompanyStatus = dataclasses.field(
+        metadata={"description": "The status of the company."}
+    )
+    company_type: CompanyType = dataclasses.field(
+        metadata={"description": "The type of company associated with the company"}
+    )
+    company_subtype: CompanySubtype | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The subtype of the company associated with the company"
+        },
+    )
+    kind: Literal[ResponseKind.SEARCH_RESULTS_COMPANY] = dataclasses.field(
+        default=ResponseKind.SEARCH_RESULTS_COMPANY,
+        metadata={"description": "The type of search result."},
+    )
+    links: AdvancedCompanyLinks | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The link to the company"},
+    )
+    date_of_creation: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The date of creation of the company."},
+    )
+    date_of_cessation: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The date of cessation of the company."},
+    )
+    registered_office_address: AdvancedRegisteredOfficeAddress | None = (
+        dataclasses.field(
+            default=None,
+            metadata={"description": "The registered office address of the company."},
+        )
+    )
+    sic_codes: list[str] | None = dataclasses.field(
+        default=None,
+        metadata={"description": "SIC codes for this company"},
+    )
+
+
+@dataclass
+class AdvancedTopHit(AdvancedCompany):
+    pass
+
+
+@dataclass
+class AdvancedCompanySearch:
+    hits: int = dataclasses.field(
+        metadata={"description": "The number of matches found using advanced search"},
+    )
+    items: list[AdvancedCompany] = dataclasses.field(
+        default_factory=list,
+        metadata={"description": "The results of the completed search."},
+    )
+    top_hit: AdvancedTopHit | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The top hit of the search results."},
+    )
+    kind: Literal[ResponseKind.SEARCH_ADVANCEDSEARCH] = dataclasses.field(
+        default=ResponseKind.SEARCH_ADVANCEDSEARCH
+    )
+    etag: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The ETag of the search response."},
     )
