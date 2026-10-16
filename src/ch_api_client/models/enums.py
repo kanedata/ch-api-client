@@ -48,3 +48,4 @@ class ResponseKind(StrEnum):
     OFFICER_LIST = "officer-list"
     FILING_HISTORY = "filing-history"
     REGISTERED_OFFICE_ADDRESS = "registered-office-address"
+    REGISTERS = "registers"

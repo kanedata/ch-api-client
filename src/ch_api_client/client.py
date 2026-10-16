@@ -171,8 +171,22 @@ class CompaniesHouseAPI:
         url = f"/company/{company_number}/appointments/{appointment_id}"
         return OfficerSummary(**self._fetch_url(url))
 
-    def get_company_registers(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+    # # Company Registers method seems to always return a 404
+    # @is_cli_method
+    # def get_company_registers(self, company_number: str) -> CompanyRegister:
+    #     """
+    #     Company registers
+
+    #     Get the company registers information.
+
+    #     Args:
+    #         company_number (str): The company number of the register information to return.
+
+    #     Returns:
+    #         CompanyRegister: The company register information.
+    #     """
+    #     url = f"/company/{company_number}/registers"
+    #     return CompanyRegister(**self._fetch_url(url))
 
     @is_cli_method
     def get_filing_history_list(

@@ -22,7 +22,12 @@ class ParametersBase:
 
 
 @dataclass
-class ItemLinkBase:
+class LinkBase:
+    pass
+
+
+@dataclass
+class ItemLinkBase(LinkBase):
     self: str = dataclasses.field(metadata={"description": "URL to this resource."})
 
 

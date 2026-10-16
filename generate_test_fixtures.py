@@ -293,8 +293,9 @@ def create_fixture(response: httpx2.Response):
         open(save_fixture, "w") as f,
     ):
         response.read()
-        data = recursive_replace_personal_info(response.json(), faker, url=url)
-        json.dump(data, f)
+        if response.content:
+            data = recursive_replace_personal_info(response.json(), faker, url=url)
+            json.dump(data, f)
 
 
 @click.command()
@@ -319,6 +320,7 @@ def main(api_key: str, test_company_number: str, test_search_query: str):
 
     # company profile endpoints
     api_client.get_company_profile(test_company_number)
+    # api_client.get_company_registers(test_company_number)
     api_client.get_registered_office_address(test_company_number)
     officer_list = api_client.get_company_officers(test_company_number)
     appointment_id = officer_list.items[0].links.self.split("/")[-1]  # type: ignore
