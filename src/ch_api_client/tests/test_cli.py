@@ -7,7 +7,7 @@ from pytest_httpx2 import HTTPXMock
 
 import ch_api_client.tests.fixtures
 from ch_api_client.cli import cli
-from src.ch_api_client.tests.test_client import DUMMY_API_KEY, METHODS, MethodToTest
+from ch_api_client.tests.conftest import DUMMY_API_KEY, METHODS, MethodToTest
 
 
 @pytest.mark.parametrize("method", METHODS, ids=str)
