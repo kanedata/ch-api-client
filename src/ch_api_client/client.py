@@ -1,9 +1,10 @@
 import dataclasses
+import datetime as dt
 from functools import wraps
 
 import httpx2
 
-from ch_api_client.models._base import ParametersBase
+from ch_api_client.models._base import CompanyNumber, ParametersBase
 from ch_api_client.models.company_officer_list import (
     CompanyOfficerListParameters,
     OfficerList,
@@ -15,6 +16,8 @@ from ch_api_client.models.company_officer_list import (
 from ch_api_client.models.company_profile import CompanyProfile
 from ch_api_client.models.document import ContentType, DocumentMetadata
 from ch_api_client.models.filing_history import (
+    AnnualAccount,
+    AnnualAccountList,
     FilingHistoryItem,
     FilingHistoryList,
     FilingHistoryListParameters,
@@ -185,6 +188,119 @@ class CompaniesHouseAPI:
             start_index=start_index,
         )
         return FilingHistoryList(**self._fetch_url(url, params=params))
+
+    @is_cli_method
+    def get_annual_account_list(self, company_number: str) -> AnnualAccountList:
+        """
+        Get a list of Annual Accounts of a company
+
+        Args:
+            company_number (str): The company number that the annual account list is required for.
+
+        Returns:
+            AnnualAccountList: The list of annual accounts for the company.
+        """
+        filing_history = self.get_filing_history_list(
+            company_number=company_number, category="accounts"
+        )
+        if not filing_history.items:
+            raise ValueError("No filing history items found for the company.")
+        annual_accounts = AnnualAccountList()
+        annual_accounts.items = []
+        for item in filing_history.items:
+            if (
+                item.description_values
+                and item.document_id
+                and item.description_values.made_up_date
+            ):
+                doc_metadata = self.get_document_metadata(document_id=item.document_id)
+                annual_accounts.items.append(
+                    AnnualAccount(
+                        company_number=CompanyNumber(company_number),
+                        financial_year_end=item.description_values.made_up_date,
+                        document_id=doc_metadata.document_id if doc_metadata else None,
+                        type=item.description,
+                        has_ixbrl=doc_metadata.has_ixbrl if doc_metadata else None,
+                        has_pdf=doc_metadata.has_pdf if doc_metadata else None,
+                    )
+                )
+        return annual_accounts
+
+    @is_cli_method
+    def get_annual_account(
+        self, company_number: str, financial_year_end: dt.date
+    ) -> AnnualAccount:
+        """
+        Get the annual account of a company
+
+        Args:
+            company_number (str): The company number that the annual account is required for.
+            financial_year_end (dt.date | dt.datetime): The financial year end date of the annual account being requested.
+
+        Returns:
+            AnnualAccount: The details of the annual account.
+        """
+        if isinstance(financial_year_end, dt.datetime):
+            financial_year_end = financial_year_end.date()
+        if isinstance(financial_year_end, str):
+            financial_year_end = dt.datetime.strptime(
+                financial_year_end, "%Y-%m-%d"
+            ).date()
+        filing_history = self.get_filing_history_list(
+            company_number=company_number, category="accounts"
+        )
+        if not filing_history.items:
+            raise ValueError("No filing history items found for the company.")
+        for item in filing_history.items:
+            if (
+                item.description_values
+                and item.document_id
+                and item.description_values.made_up_date == financial_year_end
+            ):
+                doc_metadata = self.get_document_metadata(document_id=item.document_id)
+                return AnnualAccount(
+                    company_number=CompanyNumber(company_number),
+                    financial_year_end=financial_year_end,
+                    document_id=doc_metadata.document_id if doc_metadata else None,
+                    type=item.description,
+                    has_ixbrl=doc_metadata.has_ixbrl if doc_metadata else None,
+                    has_pdf=doc_metadata.has_pdf if doc_metadata else None,
+                )
+        raise ValueError(
+            "No filing history item found for the specified financial year end."
+        )
+
+    @is_cli_method
+    def get_annual_account_document(
+        self,
+        company_number: str,
+        financial_year_end: dt.date,
+        content_type: ContentType = ContentType.PDF,
+    ) -> bytes:
+        """
+        Get the annual account document for a company financial year end
+
+        Args:
+            company_number (str): The company number that the annual account is required for.
+            financial_year_end (dt.date | dt.datetime): The financial year end date of the annual account being requested.
+
+        Returns:
+            bytes: The content of the annual account document.
+        """
+        info = self.get_annual_account(
+            company_number=company_number, financial_year_end=financial_year_end
+        )
+        if not info.document_id:
+            raise ValueError("No document ID found for the specified annual account.")
+        if content_type in (ContentType.XHTML, ContentType.XML) and not info.has_ixbrl:
+            raise ValueError(
+                "The requested content type is not available for this annual account."
+            )
+        if content_type == ContentType.PDF and not info.has_pdf:
+            raise ValueError("No PDF version available for this annual account.")
+        return self.get_document(
+            document_id=info.document_id, content_type=content_type
+        )
 
     @is_cli_method
     def get_filing_history(

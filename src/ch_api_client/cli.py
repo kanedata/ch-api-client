@@ -1,3 +1,4 @@
+import datetime as dt
 import inspect
 import typing
 from dataclasses import InitVar, field
@@ -61,6 +62,8 @@ class ApiGroup(click.Group):
         self, param_name: str, param: inspect.Parameter
     ) -> click.Parameter:
         param_type = self._get_base_type(param.annotation)
+        if param_type == dt.date:
+            param_type = click.DateTime(formats=["%Y-%m-%d"])
         if param.default is inspect.Parameter.empty:
             return click.Argument([param_name.replace("_", "-")], type=param_type)
         else:
@@ -89,10 +92,14 @@ class ApiGroup(click.Group):
                 continue
             params.append(self._param_to_param(param_name, param))
 
+        return_bytes = inspect.signature(attr).return_annotation == bytes
+
         @pass_client
         def func(obj: CliContextObject, *args, **kwargs):
             result = attr(obj.client, *args, **kwargs)
-            if hasattr(result, "items"):
+            if return_bytes:
+                click.echo(result)
+            elif hasattr(result, "items"):
                 items = result.items
                 for item in items:
                     click.echo(obj.to_json(item))

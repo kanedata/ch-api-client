@@ -12,8 +12,13 @@ from ch_api_client.cli import cli
 from ch_api_client.client import COMPANY_API_BASE_URL, DOCUMENT_API_BASE_URL
 from ch_api_client.models.company_officer_list import OfficerList, OfficerSummary
 from ch_api_client.models.company_profile import CompanyProfile
-from ch_api_client.models.document import DocumentMetadata
-from ch_api_client.models.filing_history import FilingHistoryItem, FilingHistoryList
+from ch_api_client.models.document import ContentType, DocumentMetadata
+from ch_api_client.models.filing_history import (
+    AnnualAccount,
+    AnnualAccountList,
+    FilingHistoryItem,
+    FilingHistoryList,
+)
 from ch_api_client.models.search import (
     CompanySearch,
     DisqualifiedOfficerSearch,
@@ -53,6 +58,7 @@ class UrlMock:
             content=self._get_content(),
             method=self.method,
             match_headers=self._get_headers(),
+            is_reusable=True,
         )
 
 
@@ -76,12 +82,16 @@ class MethodToTest:
             for url_mock in self.url_mocks:
                 url_mock.mock_response(httpx2_mock)
 
+    def _cli_args(self) -> list[str]:
+        args = ["--api-key", DUMMY_API_KEY, self.cli_command, *map(str, self.args)]
+        if self.kwargs:
+            for key, value in self.kwargs.items():
+                args.append(f"--{key.replace('_', '-')}")
+                args.append(str(value))
+        return args
+
     def invoke_command(self, runner: CliRunner):
-        return runner.invoke(
-            cli,
-            ["--api-key", DUMMY_API_KEY, self.cli_command, *map(str, self.args)],
-            **self.kwargs,
-        )
+        return runner.invoke(cli, self._cli_args())
 
 
 METHODS: list[MethodToTest] = [
@@ -128,6 +138,71 @@ METHODS: list[MethodToTest] = [
             ),
         ],
         return_type=FilingHistoryList,
+    ),
+    MethodToTest(
+        method_name="get_annual_account_list",
+        args=["12345678"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/filing-history(\?.*)?",
+                file="get_filing_history_list.json",
+            ),
+            UrlMock(
+                regex=r"/document/([0-9A-Za-z_-]+)(\?.*)?",
+                file="get_document_metadata.json",
+                base_url=DOCUMENT_API_BASE_URL,
+            ),
+        ],
+        return_type=AnnualAccountList,
+    ),
+    MethodToTest(
+        method_name="get_annual_account",
+        args=["12345678", "2015-01-26"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/filing-history(\?.*)?",
+                file="get_filing_history_list.json",
+            ),
+            UrlMock(
+                regex=r"/document/([0-9A-Za-z_-]+)(\?.*)?",
+                file="get_document_metadata.json",
+                base_url=DOCUMENT_API_BASE_URL,
+            ),
+        ],
+        return_type=AnnualAccount,
+    ),
+    MethodToTest(
+        method_name="get_annual_account_document",
+        args=["12345678", "2015-01-26"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/filing-history(\?.*)?",
+                file="get_filing_history_list.json",
+            ),
+            UrlMock(
+                regex=r"/document/([0-9A-Za-z_-]+)(\?.*)?",
+                file="get_document_metadata.json",
+                base_url=DOCUMENT_API_BASE_URL,
+            ),
+        ],
+        return_type=bytes,
+    ),
+    MethodToTest(
+        method_name="get_annual_account_document",
+        args=["12345678", "2015-01-26"],
+        kwargs={"content_type": ContentType.PDF},
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/filing-history(\?.*)?",
+                file="get_filing_history_list.json",
+            ),
+            UrlMock(
+                regex=r"/document/([0-9A-Za-z_-]+)(\?.*)?",
+                file="get_document_metadata.json",
+                base_url=DOCUMENT_API_BASE_URL,
+            ),
+        ],
+        return_type=bytes,
     ),
     MethodToTest(
         method_name="get_filing_history",

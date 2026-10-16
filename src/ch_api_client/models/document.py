@@ -89,3 +89,16 @@ class DocumentMetadata:
         if self.links and self.links.self:
             return self.links.self.split("/")[-1]
         return None
+
+    @property
+    def has_ixbrl(self):
+        return bool(
+            self.resources
+            and (
+                ContentType.XHTML in self.resources or ContentType.XML in self.resources
+            )
+        )
+
+    @property
+    def has_pdf(self):
+        return bool(self.resources and ContentType.PDF in self.resources)

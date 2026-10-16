@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic.dataclasses import dataclass
 
-from ch_api_client.models._base import ParametersBase
+from ch_api_client.models._base import CompanyNumber, ParametersBase
 from ch_api_client.models.enums import ResponseKind
 
 
@@ -27,6 +27,50 @@ class FilingHistoryCategory(StrEnum):
     DISSOLUTION = "dissolution"
     TERMINATION = "termination"
     APPOINTMENTS = "appointments"
+
+
+@dataclass
+class DescriptionValues:
+    officer_name: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The name of the officer associated with the filing."},
+    )
+    termination_date: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The termination date of the officer associated with the filing."
+        },
+    )
+    appointment_date: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The appointment date of the officer associated with the filing."
+        },
+    )
+    made_up_date: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The made up date of the filing."},
+    )
+    change_date: dt.date | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The change date of the filing."},
+    )
+    old_address: str | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The old address of the officer associated with the filing."
+        },
+    )
+    new_address: str | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The new address of the officer associated with the filing."
+        },
+    )
+    description: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The description of the filing."},
+    )
 
 
 @dataclass
@@ -113,6 +157,10 @@ class Resolution:
             "description": "A description of the associated filing.\n For enumeration descriptions see `description` section in the [enumeration mappings] (https://github.com/companieshouse/api-enumerations/blob/master/filing_history_descriptions.yml) file."
         },
     )
+    description_values: DescriptionValues | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The description values associated with the filing."},
+    )
     document_id: str | None = dataclasses.field(
         default=None,
         metadata={"description": "The document id of the resolution."},
@@ -162,6 +210,10 @@ class FilingHistoryItem:
         metadata={
             "description": "A description of the filing.\n For enumeration descriptions see `description` section in the [enumeration mappings](https://github.com/companieshouse/api-enumerations/blob/master/filing_history_descriptions.yml) file."
         },
+    )
+    description_values: DescriptionValues | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The description values for the filing."},
     )
     links: FilingHistoryItemLinks | None = dataclasses.field(
         default=None,
@@ -235,5 +287,63 @@ class FilingHistoryList:
         default=None,
         metadata={
             "description": "The total number of filing history items for this company."
+        },
+    )
+
+
+@dataclass
+class AnnualAccount:
+    company_number: CompanyNumber = dataclasses.field(
+        metadata={"description": "The company number of the annual account."},
+    )
+    financial_year_end: dt.date = dataclasses.field(
+        metadata={"description": "The financial year end date of the annual account."},
+    )
+    document_id: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The document ID of the annual account."},
+    )
+    type: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The type of the annual account."},
+    )
+    has_ixbrl: bool | None = dataclasses.field(
+        default=None,
+        metadata={"description": "Indicates whether the annual account has iXBRL."},
+    )
+    has_pdf: bool | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "Indicates whether the annual account has a PDF version."
+        },
+    )
+
+
+@dataclass
+class AnnualAccountList:
+    etag: str | None = dataclasses.field(
+        default=None,
+        metadata={"description": "The ETag of the resource."},
+    )
+    items: list[AnnualAccount] | None = dataclasses.field(
+        default_factory=list,
+        metadata={"description": "The annual account items."},
+    )
+    items_per_page: int | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The number of annual account items returned per page."
+        },
+    )
+    start_index: int | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The index into the entire result set that this result page starts."
+        },
+    )
+    total_count: int | None = dataclasses.field(
+        default=None,
+        metadata={
+            "description": "The total number of annual account items for this company."
         },
     )

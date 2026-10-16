@@ -15,6 +15,8 @@ def test_ch_api_cli(httpx2_mock: HTTPXMock, method: MethodToTest):
     method.add_url_mocks(httpx2_mock)
     runner = CliRunner()
     result = method.invoke_command(runner)
+    if result.exit_code != 0:
+        print(result.output)
     assert result.exit_code == 0
     split_result = result.output.splitlines()
     for line in split_result:
