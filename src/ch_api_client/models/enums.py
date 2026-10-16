@@ -34,10 +34,12 @@ class Country(StrEnum):
 
 
 class ResponseKind(StrEnum):
+    EXEMPTIONS = "exemptions"
     FILING_HISTORY = "filing-history"
     OFFICER_LIST = "officer-list"
     REGISTERED_OFFICE_ADDRESS = "registered-office-address"
     REGISTERS = "registers"
+    RELATED_COMPANIES = "related-companies"
     SEARCH_ALL = "search#all"
     SEARCH_ADVANCEDSEARCH = "search#advanced-search"
     SEARCH_ALPHABETICALDISSOLVED = "search#alphabetical-dissolved"
@@ -58,3 +60,4 @@ class ResponseKind(StrEnum):
     SEARCHRESULTS_PERSONSWITHSIGNIFICANTCONTROL = (
         "searchresults#persons-with-significant-control"
     )
+    UKESTABLISHMENT_COMPANIES = "ukestablishment-companies"

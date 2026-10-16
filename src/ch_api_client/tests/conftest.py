@@ -10,15 +10,19 @@ from pytest_httpx2 import HTTPXMock
 import ch_api_client.tests.fixtures
 from ch_api_client.cli import cli
 from ch_api_client.client import COMPANY_API_BASE_URL, DOCUMENT_API_BASE_URL
+from ch_api_client.models.charges import ChargeList
 from ch_api_client.models.company_officer_list import OfficerList, OfficerSummary
 from ch_api_client.models.company_profile import CompanyProfile
 from ch_api_client.models.document import ContentType, DocumentMetadata
+from ch_api_client.models.exemptions import CompanyExemptions
 from ch_api_client.models.filing_history import (
     AnnualAccount,
     AnnualAccountList,
     FilingHistoryItem,
     FilingHistoryList,
 )
+from ch_api_client.models.insolvency import CompanyInsolvency
+from ch_api_client.models.psc import CompanyPSCList
 from ch_api_client.models.registered_office_address import RegisteredOfficeAddress
 from ch_api_client.models.search import (
     AdvancedCompanySearch,
@@ -29,6 +33,7 @@ from ch_api_client.models.search import (
     OfficerSearch,
     Search,
 )
+from ch_api_client.models.uk_establishments import CompanyUKEstablishments
 
 DUMMY_API_KEY = "api_key_123456789"
 
@@ -158,6 +163,61 @@ METHODS: list[MethodToTest] = [
             ),
         ],
         return_type=FilingHistoryList,
+    ),
+    MethodToTest(
+        method_name="get_exemptions",
+        args=["12345678"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/exemptions(\?.*)?",
+                file="get_exemptions.json",
+            ),
+        ],
+        return_type=CompanyExemptions,
+    ),
+    MethodToTest(
+        method_name="get_charge_list",
+        args=["12345678"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/charges(\?.*)?",
+                file="get_charge_list.json",
+            ),
+        ],
+        return_type=ChargeList,
+    ),
+    MethodToTest(
+        method_name="get_insolvency_case",
+        args=["12345678"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/insolvency(\?.*)?",
+                file="get_insolvency_case.json",
+            ),
+        ],
+        return_type=CompanyInsolvency,
+    ),
+    MethodToTest(
+        method_name="get_company_uk_establishments",
+        args=["12345678"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/uk-establishments(\?.*)?",
+                file="get_company_uk_establishments.json",
+            ),
+        ],
+        return_type=CompanyUKEstablishments,
+    ),
+    MethodToTest(
+        method_name="get_company_psc_list",
+        args=["12345678"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/persons-with-significant-control(\?.*)?",
+                file="get_company_psc_list.json",
+            ),
+        ],
+        return_type=CompanyPSCList,
     ),
     MethodToTest(
         method_name="get_annual_account_list",

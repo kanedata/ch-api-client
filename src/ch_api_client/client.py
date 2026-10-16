@@ -5,6 +5,7 @@ from functools import wraps
 import httpx2
 
 from ch_api_client.models._base import CompanyNumber, ParametersBase
+from ch_api_client.models.charges import ChargeList, ChargesParameters
 from ch_api_client.models.company_officer_list import (
     CompanyOfficerListParameters,
     OfficerList,
@@ -16,6 +17,7 @@ from ch_api_client.models.company_officer_list import (
 from ch_api_client.models.company_profile import CompanyProfile
 from ch_api_client.models.company_register import CompanyRegister
 from ch_api_client.models.document import ContentType, DocumentMetadata
+from ch_api_client.models.exemptions import CompanyExemptions
 from ch_api_client.models.filing_history import (
     AnnualAccount,
     AnnualAccountList,
@@ -23,6 +25,8 @@ from ch_api_client.models.filing_history import (
     FilingHistoryList,
     FilingHistoryListParameters,
 )
+from ch_api_client.models.insolvency import CompanyInsolvency
+from ch_api_client.models.psc import CompanyPSCList, CompanyPSCListParameters
 from ch_api_client.models.registered_office_address import RegisteredOfficeAddress
 from ch_api_client.models.search import (
     AdvancedCompanySearch,
@@ -41,6 +45,7 @@ from ch_api_client.models.search import (
     Search,
     SearchParameters,
 )
+from ch_api_client.models.uk_establishments import CompanyUKEstablishments
 
 COMPANY_API_BASE_URL = "https://api.company-information.service.gov.uk"
 DOCUMENT_API_BASE_URL = "https://document-api.company-information.service.gov.uk"
@@ -180,7 +185,7 @@ class CompaniesHouseAPI:
         return OfficerSummary(**self._fetch_url(url))
 
     # Company Registers method seems to always return a 404 - this method is not tested
-    # @is_cli_method
+    @is_cli_method
     def get_company_registers(self, company_number: str) -> CompanyRegister:
         """
         Company registers
@@ -412,23 +417,111 @@ class CompaniesHouseAPI:
         response.raise_for_status()
         return response.content
 
-    def get_exemptions(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+    @is_cli_method
+    def get_exemptions(self, company_number: str) -> CompanyExemptions:
+        """
+        Company exemptions information
 
-    def get_charge_list(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+        Args:
+            company_number (str): The company number that the exemptions list is required for.
+
+        Returns:
+            CompanyExemptions: The company exemptions information.
+        """
+        url = f"/company/{company_number}/exemptions"
+        return CompanyExemptions(**self._fetch_url(url))
+
+    @is_cli_method
+    def get_charge_list(
+        self,
+        company_number: str,
+        items_per_page: int | None = None,
+        start_index: int | None = None,
+    ) -> ChargeList:
+        """
+        Charges
+
+        List of charges for a company.
+
+        Args:
+            company_number (str): The company number that the charge list is required for.
+            items_per_page (int, optional): The number of charges to return per page.
+            start_index (int, optional): The index into the entire result set that this result page starts.
+
+        Returns:
+            ChargeList: The list of charges for the company.
+        """
+        url = f"/company/{company_number}/charges"
+        params = ChargesParameters(
+            items_per_page=items_per_page,
+            start_index=start_index,
+        )
+        return ChargeList(**self._fetch_url(url, params=params))
 
     def get_charge_details(self, *args, **kwargs):
         raise NotImplementedError("Method not implemented")
 
-    def get_insolvency_case(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+    @is_cli_method
+    def get_insolvency_case(self, company_number: str) -> CompanyInsolvency:
+        """
+        Company insolvency information
 
-    def get_company_uk_establishments(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+        Args:
+            company_number (str): The company number of the basic information to return.
 
-    def get_company_psc_list(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+        Returns:
+            CompanyInsolvency: The company insolvency information.
+        """
+        url = f"/company/{company_number}/insolvency"
+        return CompanyInsolvency(**self._fetch_url(url))
+
+    @is_cli_method
+    def get_company_uk_establishments(
+        self, company_number: str
+    ) -> CompanyUKEstablishments:
+        """
+        Company UK Establishments
+
+        List of uk-establishments companies
+
+        Args:
+            company_number (str): Company number
+
+        Returns:
+            CompanyUKEstablishments: The company UK establishments information.
+        """
+        url = f"/company/{company_number}/uk-establishments"
+        return CompanyUKEstablishments(**self._fetch_url(url))
+
+    @is_cli_method
+    def get_company_psc_list(
+        self,
+        company_number: str,
+        items_per_page: int | None = None,
+        start_index: int | None = None,
+        register_view: str | None = None,
+    ) -> CompanyPSCList:
+        """
+        List the company persons with significant control
+
+        List of all persons with significant control (not statements)
+
+        Args:
+            company_number (str): The company number of the persons with significant control list being requested.
+            items_per_page (int, optional): The number of persons with significant control to return per page.
+            start_index (int, optional): The index into the entire result set that this result page starts.
+            register_view (str, optional): Display register specific information. If register is held at Companies House and register_view is set to true, only PSCs which are active or were terminated during election period are shown. Accepted values are: -`true`  \n -`false`  \n Defaults to false.
+
+        Returns:
+            CompanyPSCList: The company persons with significant control information.
+        """
+        url = f"/company/{company_number}/persons-with-significant-control"
+        params = CompanyPSCListParameters(
+            items_per_page=items_per_page,
+            start_index=start_index,
+            register_view=register_view,
+        )
+        return CompanyPSCList(**self._fetch_url(url, params=params))
 
     def get_company_psc_individual(self, *args, **kwargs):
         raise NotImplementedError("Method not implemented")

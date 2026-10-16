@@ -5,12 +5,16 @@ import click
 import httpx2
 import yaml
 
-CONSTANTS_URL = "https://raw.githubusercontent.com/companieshouse/api-enumerations/refs/heads/master/constants.yml"
+CONSTANTS_URLS = [
+    "https://raw.githubusercontent.com/companieshouse/api-enumerations/refs/heads/master/constants.yml",
+    "https://raw.githubusercontent.com/companieshouse/api-enumerations/refs/heads/master/mortgage_descriptions.yml",
+    "https://raw.githubusercontent.com/companieshouse/api-enumerations/refs/heads/master/psc_descriptions.yml",
+]
 OUTPUT_PATH = Path(__file__).parent / "src" / "ch_api_client" / "models" / "ch_enums.py"
 
 
 def snake_to_camel(snake_str):
-    components = snake_str.split("_")
+    components = snake_str.replace("-", "_").split("_")
     return components[0].title() + "".join(x.title() for x in components[1:])
 
 
@@ -31,15 +35,18 @@ FILE_TEMPLATE = """
 @click.command()
 @click.option(
     "--constants-url",
-    default=CONSTANTS_URL,
+    default=CONSTANTS_URLS,
     help="URL to fetch the constants YAML from.",
+    multiple=True,
 )
 @click.option(
     "--output-path", default=OUTPUT_PATH, help="Path to save the generated enums."
 )
 def update_ch_enums(constants_url, output_path):
-    response = httpx2.get(constants_url)
-    constants = yaml.safe_load(response.text)
+    constants = {}
+    for url in constants_url:
+        response = httpx2.get(url)
+        constants.update(yaml.safe_load(response.text))
     with open(output_path, "w") as f:
         f.write(dedent(FILE_TEMPLATE).strip())
         for key, values in constants.items():

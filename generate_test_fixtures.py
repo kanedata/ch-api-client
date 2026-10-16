@@ -16,71 +16,101 @@ from ch_api_client.models.search import DissolvedSearchType
 load_dotenv()
 
 NON_PERSONAL_INFO_KEYS = (
-    "items",
-    "items_per_page",
-    "kind",
-    "page_number",
-    "start_index",
-    "total_results",
-    "links",
-    "etag",
-    "self",
+    "accounting_reference_date",
+    "accounts",
+    "active_count",
+    "application/pdf",
     "appointment_count",
-    "matches",
-    "description",
-    "description_identifiers",
-    "snippet",
-    "is_pre_1992_appointment",
-    "officer",
     "appointments",
-    "officer_role",
+    "barcode",
+    "can_file",
+    "category",
+    "ceased_count",
+    "charge_number",
+    "charges",
+    "classification",
+    "company_number",
+    "company_profile",
     "company_status",
     "company_type",
-    "company_number",
-    "description_identifier",
+    "content_length",
     "country_of_residence",
-    "nationality",
-    "resigned_count",
-    "inactive_count",
-    "last_accounts",
-    "type",
-    "can_file",
+    "created_at",
+    "description_identifier",
+    "description_identifiers",
+    "description_values",
+    "description",
+    "disclosure_transparency_rules_chapter_five_applies",
+    "document_metadata",
+    "document",
+    "etag",
+    "exempt_from",
+    "exempt_to",
+    "exemption_type",
+    "exemptions",
+    "filename",
+    "filing_history_status",
+    "filing_history",
+    "filing_type",
+    "filing",
+    "former_names",
     "has_charges",
     "has_insolvency_history",
-    "jurisdiction",
-    "charges",
-    "filing_history",
-    "officers",
-    "registered_office_is_in_dispute",
-    "sic_codes",
-    "type",
-    "active_count",
-    "accounts",
-    "accounting_reference_date",
-    "former_names",
-    "category",
-    "subcategory",
-    "description_values",
-    "pages",
-    "document_metadata",
-    "filing_history_status",
-    "transaction_id",
-    "paper_filed",
-    "barcode",
-    "resolutions",
-    "total_count",
-    "res_type",
-    "significant_date_type",
-    "filename",
-    "created_at",
-    "document",
-    "resources",
-    "application/pdf",
-    "content_length",
-    "company_profile",
-    "top_hit",
     "hits",
+    "inactive_count",
+    "is_pre_1992_appointment",
+    "items_per_page",
+    "items",
+    "jurisdiction",
+    "kind",
+    "last_accounts",
+    "links",
+    "matches",
+    "nationality",
+    "officer_role",
+    "officer",
+    "officers",
+    "page_number",
+    "pages",
+    "paper_filed",
+    "part_satisfied_count",
+    "particulars",
+    "persons_entitled",
     "previous_company_names",
+    "psc_exempt_as_trading_on_uk_regulated_market",
+    "registered_office_is_in_dispute",
+    "res_type",
+    "resigned_count",
+    "resolutions",
+    "resources",
+    "satisfied_count",
+    "satisfied_on",
+    "secured_details",
+    "self",
+    "sic_codes",
+    "significant_date_type",
+    "snippet",
+    "start_index",
+    "status",
+    "subcategory",
+    "top_hit",
+    "total_count",
+    "total_results",
+    "transaction_id",
+    "transactions",
+    "type",
+    "unfiltered_count",
+    "cases",
+    "dates",
+    "number",
+    "role",
+    "practitioners",
+    "name_elements",
+    "natures_of_control",
+    "ceased",
+    "identity_verification_details",
+    "persons_with_significant_control",
+    "notifications",
 )
 
 DATE_KEYS = (
@@ -101,6 +131,12 @@ DATE_KEYS = (
     "significant_date",
     "effective_from",
     "ceased_on",
+    "created_on",
+    "delivered_on",
+    "ceased_to_act_on",
+    "notified_on",
+    "appointment_verification_end_on",
+    "appointment_verification_start_on",
 )
 
 URL_RE_MATCH = re.compile(r"^/[A-Za-z0-9_\-\/]+$")
@@ -118,6 +154,16 @@ def get_fixture_filename(url: httpx2.URL) -> str:
         return "get_filing_history.json"
     if re.match(r"^company_[0-9A-Z]{8}_filing-history$", filename):
         return "get_filing_history_list.json"
+    if re.match(r"^company_[0-9A-Z]{8}_exemptions$", filename):
+        return "get_exemptions.json"
+    if re.match(r"^company_[0-9A-Z]{8}_charges$", filename):
+        return "get_charge_list.json"
+    if re.match(r"^company_[0-9A-Z]{8}_insolvency$", filename):
+        return "get_insolvency_case.json"
+    if re.match(r"^company_[0-9A-Z]{8}_uk-establishments$", filename):
+        return "get_company_uk_establishments.json"
+    if re.match(r"^company_[0-9A-Z]{8}_persons-with-significant-control$", filename):
+        return "get_company_psc_list.json"
     if re.match(r"^company_[0-9A-Z]{8}$", filename):
         return "get_company_profile.json"
     if re.match(r"^document_.*$", filename):
@@ -220,6 +266,8 @@ def recursive_replace_personal_info(
                 new_data[k] = faker.name()
             elif k in ("surname",):
                 new_data[k] = faker.last_name()
+            elif k in ("forename", "middle_name"):
+                new_data[k] = faker.first_name()
             elif k == "address_line_1":
                 new_data[k] = faker.secondary_address()
             elif k == "address_line_2":
@@ -245,9 +293,12 @@ def recursive_replace_personal_info(
             elif k in DATE_KEYS and v:
                 try:
                     current_date = dt.datetime.strptime(data[k], "%Y-%m-%d")
-                    new_date = current_date + dt.timedelta(
-                        days=faker.random_int(min=1, max=30)
-                    )
+                    try:
+                        new_date = current_date + dt.timedelta(
+                            days=faker.random_int(min=1, max=30)
+                        )
+                    except OverflowError:
+                        new_date = current_date
                 except ValueError:
                     new_data[k] = v
                 else:
@@ -319,11 +370,21 @@ def create_fixture(response: httpx2.Response):
     envvar="TEST_COMPANY_NUMBER",
 )
 @click.option(
+    "--test-insolvent-company-number",
+    help="The test insolvent company number.",
+    envvar="TEST_INSOLVENT_COMPANY_NUMBER",
+)
+@click.option(
     "--test-search-query",
     help="The test search query.",
     envvar="TEST_SEARCH_QUERY",
 )
-def main(api_key: str, test_company_number: str, test_search_query: str):
+def main(
+    api_key: str,
+    test_company_number: str,
+    test_insolvent_company_number: str,
+    test_search_query: str,
+):
     session = httpx2.Client(event_hooks={"response": [create_fixture]})
     api_client = CompaniesHouseAPI(api_key=api_key, session=session)
 
@@ -337,6 +398,11 @@ def main(api_key: str, test_company_number: str, test_search_query: str):
         company_number=test_company_number,
         appointment_id=appointment_id,
     )
+    api_client.get_exemptions(test_company_number)
+    api_client.get_charge_list(test_company_number)
+    api_client.get_insolvency_case(test_insolvent_company_number)
+    api_client.get_company_uk_establishments(test_company_number)
+    api_client.get_company_psc_list(test_company_number)
 
     # filing history
     filing_history = api_client.get_filing_history_list(test_company_number)
