@@ -50,6 +50,8 @@ def update_ch_enums(constants_url, output_path):
         response_encoding = chardet.detect(response.content, max_bytes=10000)[
             "encoding"
         ]
+        if response_encoding is None:
+            response_encoding = "utf-8"
         constants.update(yaml.safe_load(response.content.decode(response_encoding)))
     with open(output_path, "w") as f:
         f.write(dedent(FILE_TEMPLATE).strip())
