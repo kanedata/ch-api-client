@@ -3,7 +3,12 @@ from ch_api_client.client import CompaniesHouseAPI
 from ch_api_client.models.company_officer_list import OfficerList, OfficerSummary
 from ch_api_client.models.company_profile import CompanyProfile
 from ch_api_client.models.document import DocumentMetadata
-from ch_api_client.models.filing_history import FilingHistoryItem, FilingHistoryList
+from ch_api_client.models.filing_history import (
+    AnnualAccount,
+    FilingHistoryItem,
+    FilingHistoryList,
+)
+from ch_api_client.models.registered_office_address import RegisteredOfficeAddress
 from ch_api_client.models.search import (
     CompanySearch,
     DisqualifiedOfficerSearch,
@@ -17,6 +22,7 @@ def main() -> None:
 
 
 __all__ = [
+    "AnnualAccount",
     "CompaniesHouseAPI",
     "CompanyProfile",
     "CompanySearch",
@@ -27,5 +33,6 @@ __all__ = [
     "OfficerList",
     "OfficerSearch",
     "OfficerSummary",
+    "RegisteredOfficeAddress",
     "Search",
 ]

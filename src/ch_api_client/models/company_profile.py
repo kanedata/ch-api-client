@@ -7,6 +7,7 @@ from ch_api_client.models._base import (
     AccountingDateBase,
     AddressBase,
     CompanyNumber,
+    ItemLinkBase,
     SICCode,
 )
 from ch_api_client.models.ch_enums import (
@@ -25,10 +26,7 @@ from ch_api_client.models.enums import Country
 
 
 @dataclass
-class LinksType:
-    self: str = dataclasses.field(
-        metadata={"description": "The URL of the resource."},
-    )
+class LinksType(ItemLinkBase):
     persons_with_significant_control: str | None = dataclasses.field(
         default=None,
         metadata={

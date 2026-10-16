@@ -19,6 +19,7 @@ from ch_api_client.models.filing_history import (
     FilingHistoryItem,
     FilingHistoryList,
 )
+from ch_api_client.models.registered_office_address import RegisteredOfficeAddress
 from ch_api_client.models.search import (
     CompanySearch,
     DisqualifiedOfficerSearch,
@@ -105,6 +106,17 @@ METHODS: list[MethodToTest] = [
             ),
         ],
         return_type=CompanyProfile,
+    ),
+    MethodToTest(
+        method_name="get_registered_office_address",
+        args=["12345678"],
+        url_mocks=[
+            UrlMock(
+                regex=r"/company/([0-9A-Z]{8})/registered-office-address(\?.*)?",
+                file="get_registered_office_address.json",
+            ),
+        ],
+        return_type=RegisteredOfficeAddress,
     ),
     MethodToTest(
         method_name="get_company_officers",

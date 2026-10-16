@@ -22,6 +22,7 @@ from ch_api_client.models.filing_history import (
     FilingHistoryList,
     FilingHistoryListParameters,
 )
+from ch_api_client.models.registered_office_address import RegisteredOfficeAddress
 from ch_api_client.models.search import (
     CompanySearch,
     CompanySearchParameters,
@@ -95,8 +96,22 @@ class CompaniesHouseAPI:
         url = f"/company/{company_number}"
         return CompanyProfile(**self._fetch_url(url))
 
-    def get_company_address(self, *args, **kwargs):
-        raise NotImplementedError("Method not implemented")
+    @is_cli_method
+    def get_registered_office_address(
+        self, company_number: str
+    ) -> RegisteredOfficeAddress:
+        """
+        Get the current registered office address of a company
+
+        Args:
+            company_number (str): Company number for registered office address
+
+        Returns:
+            RegisteredOfficeAddress: The registered officer address information.
+        """
+        # Example implementation:
+        url = f"/company/{company_number}/registered-office-address"
+        return RegisteredOfficeAddress(**self._fetch_url(url))
 
     @is_cli_method
     def get_company_officers(

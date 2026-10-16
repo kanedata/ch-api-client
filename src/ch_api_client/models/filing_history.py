@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic.dataclasses import dataclass
 
-from ch_api_client.models._base import CompanyNumber, ParametersBase
+from ch_api_client.models._base import CompanyNumber, ItemLinkBase, ParametersBase
 from ch_api_client.models.enums import ResponseKind
 
 
@@ -132,9 +132,8 @@ class AssociatedFiling:
 
 
 @dataclass
-class FilingHistoryItemLinks:
-    self: str | None = dataclasses.field(
-        default=None,
+class FilingHistoryItemLinks(ItemLinkBase):
+    self: str = dataclasses.field(
         metadata={"description": "Link to this filing history item."},
     )
     document_metadata: str | None = dataclasses.field(

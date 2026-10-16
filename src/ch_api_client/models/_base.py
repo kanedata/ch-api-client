@@ -22,6 +22,11 @@ class ParametersBase:
 
 
 @dataclass
+class ItemLinkBase:
+    self: str = dataclasses.field(metadata={"description": "URL to this resource."})
+
+
+@dataclass
 class AddressBase:
     address_line_1: str | None = dataclasses.field(
         default=None,

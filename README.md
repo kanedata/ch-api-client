@@ -48,7 +48,7 @@ From the [Companies House Public Data API](https://developer-specs.company-infor
 | Method                                | Url                                                                                                              | Returned Object             | Implemented |
 |---------------------------------------|------------------------------------------------------------------------------------------------------------------|-----------------------------|-------------|
 | `get_company_profile`                 | `/company/{company_number}`                                                                                      | `CompanyProfile`            | Y           |
-| `get_company_address`                 | `/company/{company_number}/registered-office-address`                                                            |                             |             |
+| `get_registered_office_address`                 | `/company/{company_number}/registered-office-address`                                                            |     `RegisteredOfficeAddress`                        | Y             |
 | `get_company_officers`                | `/company/{company_number}/officers`                                                                             | `OfficerList`               | Y           |
 | `get_company_officer_appointment`     | `/company/{company_number}/appointments/{appointment_id}`                                                        | `OfficerSummary`            | Y           |
 | `get_company_registers`               | `/company/{company_number}/registers`                                                                            |                             |             |
@@ -87,6 +87,13 @@ From the [Document API](https://developer-specs.company-information.service.gov.
 
 - `get_document_metadata` - returns `DocumentMetadata`
 - `get_document` - returns a bytes object with the document contents
+
+Utility methods:
+
+ - `client.get_annual_account_list` - get a list of the available annual accounts
+ - `client.get_annual_account(company_number, financial_year_end)` - get a specific annual account record
+ - `client.get_annual_account_document(company_number, financial_year_end)` - get a specific annual account document as bytes (can either be IXBRL or PDF)
+
 
 ## Development
 

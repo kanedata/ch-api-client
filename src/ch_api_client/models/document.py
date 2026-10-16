@@ -4,6 +4,8 @@ from enum import StrEnum
 
 from pydantic.dataclasses import dataclass
 
+from ch_api_client.models._base import ItemLinkBase
+
 
 class ContentType(StrEnum):
     PDF = "application/pdf"
@@ -37,9 +39,8 @@ class Resource:
 
 
 @dataclass
-class DocumentMetadataLinks:
-    self: str | None = dataclasses.field(
-        default=None,
+class DocumentMetadataLinks(ItemLinkBase):
+    self: str = dataclasses.field(
         metadata={"description": "Link to this document."},
     )
     document: str | None = dataclasses.field(

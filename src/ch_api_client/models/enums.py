@@ -47,3 +47,4 @@ class ResponseKind(StrEnum):
     SEARCHRESULTS_DISQUALIFIEDOFFICER = "searchresults#disqualified-officer"
     OFFICER_LIST = "officer-list"
     FILING_HISTORY = "filing-history"
+    REGISTERED_OFFICE_ADDRESS = "registered-office-address"

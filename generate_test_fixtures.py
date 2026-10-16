@@ -101,6 +101,8 @@ URL_RE_MATCH = re.compile(r"^/[A-Za-z0-9_\-\/]+$")
 
 def get_fixture_filename(url: httpx2.URL) -> str:
     filename = url.path.replace("/", "_").strip("_")
+    if re.match(r"^company_[0-9A-Z]{8}_registered-office-address$", filename):
+        return "get_registered_office_address.json"
     if re.match(r"^company_[0-9A-Z]{8}_appointments_.*$", filename):
         return "get_company_officer_appointment.json"
     if re.match(r"^company_[0-9A-Z]{8}_officers$", filename):
@@ -211,6 +213,24 @@ def recursive_replace_personal_info(
                 new_data[k] = faker.name()
             elif k in ("surname",):
                 new_data[k] = faker.last_name()
+            elif k == "address_line_1":
+                new_data[k] = faker.secondary_address()
+            elif k == "address_line_2":
+                new_data[k] = faker.street_name()
+            elif k == "locality":
+                new_data[k] = faker.city()
+            elif k == "po_box":
+                new_data[k] = faker.building_number()
+            elif k == "postal_code":
+                new_data[k] = faker.postcode()
+            elif k == "care_of":
+                new_data[k] = faker.name()
+            elif k == "region":
+                new_data[k] = faker.administrative_unit()
+            elif k == "country":
+                new_data[k] = faker.current_country()
+            elif k == "premises":
+                new_data[k] = faker.building_number()
             elif k == "person_number":
                 new_data[k] = faker.numerify(text="############")
             elif k in DATE_KEYS and v:
@@ -299,6 +319,7 @@ def main(api_key: str, test_company_number: str, test_search_query: str):
 
     # company profile endpoints
     api_client.get_company_profile(test_company_number)
+    api_client.get_registered_office_address(test_company_number)
     officer_list = api_client.get_company_officers(test_company_number)
     appointment_id = officer_list.items[0].links.self.split("/")[-1]  # type: ignore
     api_client.get_company_officer_appointment(
@@ -310,8 +331,11 @@ def main(api_key: str, test_company_number: str, test_search_query: str):
     filing_history = api_client.get_filing_history_list(test_company_number)
     transaction_id = filing_history.items[0].transaction_id  # type: ignore
     assert isinstance(transaction_id, str)
-    api_client.get_filing_history(test_company_number, transaction_id)
-    api_client.get_document_metadata(test_company_number, transaction_id)
+    filing_history_item = api_client.get_filing_history(
+        test_company_number, transaction_id
+    )
+    assert isinstance(filing_history_item.document_id, str)
+    api_client.get_document_metadata(filing_history_item.document_id)
 
     # search endpoints
     api_client.get_search_all(test_search_query)

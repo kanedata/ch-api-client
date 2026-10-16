@@ -8,6 +8,7 @@ from ch_api_client.models._base import (
     AddressBase,
     CompanyNumber,
     DateOfBirthBase,
+    ItemLinkBase,
     ParametersBase,
 )
 from ch_api_client.models._shared import OfficerAddress, OfficerDateOfBirth
@@ -52,9 +53,8 @@ class DisqualifiedOfficerSearchParameters(SearchParameters):
 
 
 @dataclass
-class LinksModel:
-    self: str | None = dataclasses.field(
-        default=None,
+class LinksModel(ItemLinkBase):
+    self: str = dataclasses.field(
         metadata={
             "description": "The URL of the resource being returned by the search item."
         },

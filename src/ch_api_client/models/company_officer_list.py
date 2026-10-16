@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic.dataclasses import dataclass
 
-from ch_api_client.models._base import ParametersBase
+from ch_api_client.models._base import ItemLinkBase, ParametersBase
 from ch_api_client.models._shared import OfficerAddress, OfficerDateOfBirth
 from ch_api_client.models.ch_enums import IdentificationType, OfficerRole
 from ch_api_client.models.enums import ResponseKind
@@ -70,7 +70,7 @@ class OfficerLinkTypes:
 
 
 @dataclass
-class ItemLinkTypes:
+class ItemLinkTypes(ItemLinkBase):
     self: str = dataclasses.field(
         metadata={
             "description": "Link to this individual company officer appointment resource."
@@ -275,7 +275,7 @@ class OfficerSummary:
 
 
 @dataclass
-class LinkTypes:
+class LinkTypes(ItemLinkBase):
     self: str = dataclasses.field(
         metadata={"description": "Link to this officer list resource."}
     )
