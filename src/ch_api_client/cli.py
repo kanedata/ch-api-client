@@ -136,6 +136,13 @@ def get_filing_history_document(
     content_type: ContentType | None = None,
 ):
     client = obj.client
-    document_metadata = client.get_document_metadata(company_number, transaction_id)
-    result = client.get_document(document_metadata, content_type=content_type)
+    filing_history = client.get_filing_history(company_number, transaction_id)
+    if not filing_history.document_id:
+        raise click.ClickException("Filing history does not have a document ID.")
+    document_metadata = client.get_document_metadata(filing_history.document_id)
+    result = client.get_document(
+        filing_history.document_id,
+        document_metadata=document_metadata,
+        content_type=content_type,
+    )
     output_file.write(result)  # type: ignore

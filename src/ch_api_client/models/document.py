@@ -81,3 +81,11 @@ class DocumentMetadata:
         default=None,
         metadata={"description": "The date and time the document was last updated"},
     )
+
+    @property
+    def document_id(self):
+        if self.id is not None:
+            return self.id
+        if self.links and self.links.self:
+            return self.links.self.split("/")[-1]
+        return None

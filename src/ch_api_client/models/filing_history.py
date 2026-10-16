@@ -192,6 +192,12 @@ class FilingHistoryItem:
         metadata={"description": "The type of filing."},
     )
 
+    @property
+    def document_id(self) -> str | None:
+        if self.links and self.links.document_metadata:
+            return self.links.document_metadata.split("/")[-1]
+        return None
+
 
 @dataclass
 class FilingHistoryList:

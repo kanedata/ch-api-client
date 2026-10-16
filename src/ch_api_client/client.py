@@ -56,15 +56,23 @@ class CompaniesHouseAPI:
         self.session.auth = (self.api_key, "")
         self.base_url = base_url
 
-    def _fetch_url(self, url: str, params: ParametersBase | None = None) -> dict:
+    def _fetch_url(
+        self,
+        url: str,
+        params: ParametersBase | None = None,
+        base_url: str | None = None,
+    ) -> dict:
         """Fetch a URL with the given parameters and return the JSON response."""
+        if base_url is None:
+            base_url = self.base_url
+
         if params is None:
             params_dict = {}
         else:
             params_dict = {
                 k: v for k, v in dataclasses.asdict(params).items() if v is not None
             }
-        response = self.session.get(f"{self.base_url}{url}", params=params_dict)
+        response = self.session.get(f"{base_url}{url}", params=params_dict)
         response.raise_for_status()
         return response.json()
 
@@ -198,64 +206,49 @@ class CompaniesHouseAPI:
         return FilingHistoryItem(**self._fetch_url(url))
 
     @is_cli_method
-    def get_document_metadata(
-        self, company_number: str, transaction_id: str
-    ) -> DocumentMetadata:
+    def get_document_metadata(self, document_id: str) -> DocumentMetadata:
         """
         Fetch a document's metadata
 
         Args:
-            company_number (str): The company number that the single filing is required for.
-            transaction_id (str): The transaction id that the filing history is required for.
+            document_id (str): The document id that the metadata is required for.
 
         Returns:
             DocumentMetadata: The metadata of the filing history document.
         """
-        item = self.get_filing_history(company_number, transaction_id)
-        url = (
-            item.links.document_metadata
-            if item.links and item.links.document_metadata
-            else None
-        )
-        if not url:
-            raise ValueError(
-                "Document metadata URL not found for the filing history item."
-            )
-        response = self.session.get(url)
-        response.raise_for_status()
-        return DocumentMetadata(**response.json())
+        url = f"/document/{document_id}"
+        return DocumentMetadata(**self._fetch_url(url, base_url=DOCUMENT_API_BASE_URL))
 
     def get_document(
         self,
-        document_metadata: DocumentMetadata,
+        document_id: str,
+        document_metadata: DocumentMetadata | None = None,
         content_type: ContentType | None = None,
     ) -> bytes:
         """
         Fetch the content of a document given its metadata.
 
         Args:
-            document_metadata (DocumentMetadata): The metadata of the document to fetch.
+            document_id (str): The ID of the document to fetch.
+            document_metadata (DocumentMetadata | None): The metadata of the document to fetch.
+            content_type (ContentType | None): The desired content type of the document.
 
         Returns:
             bytes: The content of the document.
         """
-        url = (
-            document_metadata.links.document
-            if document_metadata.links and document_metadata.links.document
-            else None
-        )
-        if not url:
-            raise ValueError("Document URL not found for the given document metadata.")
+        url = f"{DOCUMENT_API_BASE_URL}/document/{document_id}/content"
         headers = {}
         if content_type:
-            if document_metadata.resources and (
-                content_type.value not in document_metadata.resources
+            if (
+                document_metadata
+                and document_metadata.resources
+                and (content_type.value not in document_metadata.resources)
             ):
                 raise ValueError(
                     f"Content type {content_type.value} not available in document resources."
                 )
             headers["Accept"] = content_type.value
-        else:
+        elif document_metadata:
             if document_metadata.resources and len(document_metadata.resources) == 1:
                 headers["Accept"] = next(iter(document_metadata.resources.keys()))
             elif document_metadata.resources and len(document_metadata.resources) > 1:
